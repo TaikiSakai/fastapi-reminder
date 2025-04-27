@@ -6,19 +6,36 @@ from app.domain.user.datas import (
     IsActive,
     Role,
 )
-from app.infrastructures.di.injection import get_create_user_usecase
+from app.infrastructures.di.injection import (
+    get_create_user_usecase,
+    get_user_usecase,
+)
 from app.usecases.user.create_user_usecase import CreateUserUsecase
+from app.usecases.user.get_user_usecase import GetUserUsecase
 from app.schemas.users import UserCreateSchema, UserSchema
 
 
 class UserHandler:
     def register_routes(self, router: APIRouter):
+        @router.get("/user/{user_id}")
+        def get_user(
+            user_id: int,
+            usecase: GetUserUsecase = Depends(get_user_usecase)
+        ) -> UserSchema:
+            user = usecase.execute(user_id=int(user_id))
 
-        @router.post("/ddd_user")
+            return UserSchema.from_entity(user)
+
+        @router.get("/users")
+        def get_users(data, usecase):
+            # Logic to retrieve all users
+            pass
+        
+        @router.post("/user")
         def create_user(
             data: UserCreateSchema,
             usecase: CreateUserUsecase = Depends(get_create_user_usecase)
-        ):
+        ) -> UserSchema:
             user_name = UserName(data.user_name)
             email = Email(data.email)
             is_active = IsActive(True)
@@ -32,3 +49,4 @@ class UserHandler:
             )
 
             return UserSchema.from_entity(user)
+

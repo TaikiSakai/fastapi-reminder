@@ -21,7 +21,7 @@ class UserRepository(UserRespositoryInterFace):
 
         return user_dto.to_entity()
 
-    def get_user(self, id: int) -> Optional[User]:
+    def get_user(self, id: int) -> User:
         user = self.db.query(UsersModel).filter(UsersModel.id == id).first()
         if user:
             return user.to_entity()

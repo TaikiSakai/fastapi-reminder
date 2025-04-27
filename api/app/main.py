@@ -4,12 +4,15 @@ from app.presentation.handler.user_handler import UserHandler
 
 
 app = FastAPI()
+api = APIRouter(prefix="/api/v1", tags=["v1"])
 
 # app.include_router(router.v1_router, prefix="/v1")
 # app.include_router(user.ddd_router, prefix="/ddd")
 
 user_handler = UserHandler()
-user_handler.register_routes(app)
+user_handler.register_routes(api)
+
+app.include_router(api)
 
 
 @app.get("/health_check")
