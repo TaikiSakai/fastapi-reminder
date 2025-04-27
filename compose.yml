@@ -1,0 +1,40 @@
+services:
+  api:
+    # restart: always
+    build:
+      context: .
+      dockerfile: ./docker/api/Dockerfile
+    container_name: 'fastapi-reminder'
+    working_dir: '/api'
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./:/api
+    # command: ls
+    ports:
+      - "9000:5000"
+      - "5678:5678"
+
+    depends_on:
+      - db
+
+  db:
+    image: postgres:latest
+    container_name: 'db-reminder'
+    build:
+      context: .
+      dockerfile: ./docker/db/Dockerfile
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: 'user'
+      POSTGRES_PASSWORD: 'password'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+      
+
+
+
