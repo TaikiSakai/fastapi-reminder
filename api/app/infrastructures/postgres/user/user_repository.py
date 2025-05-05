@@ -1,6 +1,6 @@
 """Postgres implementation of the UserRepository interface."""
 
-from typing import Annotated, Optional
+from typing import Annotated
 
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
