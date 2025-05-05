@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from app.domain.user.exceptions.user_not_found_error import UserNotFoundError
+from app.domain.user.exceptions.user import UserNotFoundError
 from app.domain.user.entities.user import User
 from app.domain.user.repositories.user import UserRespositoryInterFace
 
