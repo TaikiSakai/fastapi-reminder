@@ -14,6 +14,10 @@ from app.usecases.user.get_user_usecase import (
     GetUserUsecase,
     new_get_user_usecase,
 )
+from app.usecases.user.get_all_users_usecase import (
+    GetAllUsersUsecase,
+    new_get_all_users_usecase,
+)
 
 
 def get_user_repository(db: Session = Depends(get_db)) -> UserRepository:
@@ -33,3 +37,10 @@ def get_user_usecase(
 ) -> GetUserUsecase:
     """Get a new instance of UserUsecase."""
     return new_get_user_usecase(user_repository)
+
+
+def get_all_users_usecase(
+    user_repository: UserRepository = Depends(get_user_repository)
+) -> GetAllUsersUsecase:
+    """Get a new instance of GetAllUsersUsecase."""
+    return new_get_all_users_usecase(user_repository)

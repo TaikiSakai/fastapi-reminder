@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import Depends, APIRouter
 
 from app.domain.user.datas import (
@@ -9,9 +11,11 @@ from app.domain.user.datas import (
 from app.infrastructures.di.injection import (
     get_create_user_usecase,
     get_user_usecase,
+    get_all_users_usecase,
 )
 from app.usecases.user.create_user_usecase import CreateUserUsecase
 from app.usecases.user.get_user_usecase import GetUserUsecase
+from app.usecases.user.get_all_users_usecase import GetAllUsersUsecase
 from app.schemas.users import UserCreateSchema, UserSchema
 
 
@@ -28,9 +32,12 @@ def get_user(
 
 
 @router.get("/users")
-def get_users(data, usecase):
-    # Logic to retrieve all users
-    pass
+def get_users(
+    usecase: GetAllUsersUsecase = Depends(get_all_users_usecase)
+) -> List[UserSchema]:
+    users = usecase.execute()
+
+    return [UserSchema.from_entity(user) for user in users]
 
 
 @router.post("/user")
