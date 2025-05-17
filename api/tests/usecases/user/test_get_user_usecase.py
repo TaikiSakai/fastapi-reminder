@@ -32,7 +32,6 @@ class TestGetUserUsecase:
         user_repository.get_user.return_value = user
 
         usecase = GetUserUsecase(user_repository)
-
         result = usecase.execute(user_id=user_id)
 
         assert isinstance(result, User)
@@ -44,7 +43,6 @@ class TestGetUserUsecase:
         user_id = 1
 
         usecase = GetUserUsecase(user_repository)
-
         with pytest.raises(UserNotFoundError) as ex:
             usecase.execute(user_id=user_id)
 
