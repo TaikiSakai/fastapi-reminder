@@ -19,7 +19,8 @@ from app.usecases.user.get_all_users_usecase import GetAllUsersUsecase
 from app.schemas.users import UserCreateSchema, UserSchema
 
 
-router = APIRouter()
+router = APIRouter(prefix="/api/v1", tags=["v1"])
+
 
 @router.get("/user/{user_id}")
 def get_user(
