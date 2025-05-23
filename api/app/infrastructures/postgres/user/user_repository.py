@@ -28,8 +28,17 @@ class UserRepository(UserRespositoryInterFace):
 
         raise HTTPException(status_code=404, detail="User not found")
 
-    def update_user(self, user: Annotated[User, User]) -> User:
-        pass
+    def update_user(self, id: int, user: Annotated[User, User]) -> None:
+        current_user = self.db.query(UsersModel).filter(UsersModel.id == id).first()
+        if not current_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user_dto = UsersModel.from_entity(user)
+        current_user.email = user_dto.email
+        current_user.user_name = user_dto.user_name
+        current_user.role = user_dto.role
+        current_user.updated_at = user_dto.updated_at
+
 
     def delete_user(self, id: int) -> bool:
         pass

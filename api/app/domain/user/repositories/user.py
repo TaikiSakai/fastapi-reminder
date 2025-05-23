@@ -14,7 +14,7 @@ class UserRespositoryInterFace(ABC):
         pass
 
     @abstractmethod
-    def update_user(self, user: User) -> User:
+    def update_user(self, id: int, user: User) -> None:
         pass
 
     @abstractmethod

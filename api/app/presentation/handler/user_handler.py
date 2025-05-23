@@ -1,7 +1,9 @@
 from typing import List
 
-from fastapi import Depends, APIRouter
+from fastapi import Depends, APIRouter, HTTPException
+from sqlalchemy.orm import Session
 
+from app.db.database import get_db
 from app.domain.user.datas import (
     UserName,
     Email,
@@ -12,11 +14,14 @@ from app.infrastructures.di.injection import (
     get_create_user_usecase,
     get_user_usecase,
     get_all_users_usecase,
+    get_update_user_usecase,
 )
+from app.domain.user.exceptions.user import UserNotFoundError
 from app.usecases.user.create_user_usecase import CreateUserUsecase
 from app.usecases.user.get_user_usecase import GetUserUsecase
 from app.usecases.user.get_all_users_usecase import GetAllUsersUsecase
-from app.schemas.users import UserCreateSchema, UserSchema
+from app.usecases.user.update_user_usecase import UpdateUserUsecase
+from app.schemas.users import UserCreateSchema, UserSchema, UserUpdateSchema
 
 
 router = APIRouter(prefix="/api/v1", tags=["v1"])
@@ -57,5 +62,32 @@ def create_user(
         is_active=is_active,
         role=role
     )
+
+    return UserSchema.from_entity(user)
+
+
+@router.patch("/user/{user_id}")
+def update_user(
+    user_id: int,
+    data: UserUpdateSchema,
+    usecase: UpdateUserUsecase = Depends(get_update_user_usecase),
+    db: Session = Depends(get_db),
+) -> UserSchema:
+    id = int(user_id)
+    user_name = UserName(data.user_name) if data.user_name else None
+    email = Email(data.email) if data.email else None
+    role = Role(data.role) if data.role else None
+
+    try:
+        with db.begin():
+            user = usecase.execute(
+                id=id,
+                user_name=user_name,
+                email=email,
+                role=role
+            )
+
+    except UserNotFoundError as e:
+        raise HTTPException(status_code=404, detail=e)
 
     return UserSchema.from_entity(user)
