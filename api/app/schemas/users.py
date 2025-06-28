@@ -22,7 +22,7 @@ class UserSchema(BaseModel):
 class UserCreateSchema(BaseModel):
     user_name: str = Field(min_length=1, max_length=100)
     email: str
-    role: str   
+    role: str
 
 
 class UserUpdateSchema(BaseModel):

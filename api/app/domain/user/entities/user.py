@@ -66,15 +66,23 @@ class User:
         self._user_name = new_user_name
         self._updated_at = datetime.now()
 
+    def update_email(self, new_email: Email) -> None:
+        self._email = new_email
+        self._updated_at = datetime.now()
+
+    def update_role(self, new_role: Role) -> None:
+        self._role = new_role
+        self._updated_at = datetime.now()
+
     @staticmethod
     def create(
-            id: int,
+            id: int | None,
             email: Email,
             user_name: UserName,
             is_active: IsActive,
             role: Role,
-            created_at: Optional[datetime] = None,
-            updated_at: Optional[datetime] = None
+            created_at: datetime | None,
+            updated_at: datetime | None
     ) -> "User":
         return User(
             id=id,
