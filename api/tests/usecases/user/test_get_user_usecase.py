@@ -14,37 +14,38 @@ from app.usecases.user.get_user_usecase import GetUserUsecase
 
 
 class TestGetUserUsecase:
-    def test_execute(self, mocker: MockFixture):
-        user_repository = mocker.MagicMock(UserRepository)
+    class TestExecute:
+        def test_execute_success(self, mocker: MockFixture):
+            user_repository = mocker.MagicMock(UserRepository)
 
-        user_id = 1
+            user_id = 1
 
-        user = User(
-            id=user_id,
-            user_name=UserName("test_user"),
-            email=Email("test_user@example.com"),
-            is_active=IsActive(True),
-            role=Role("admin"),
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
+            user = User(
+                id=user_id,
+                user_name=UserName("test_user"),
+                email=Email("test_user@example.com"),
+                is_active=IsActive(True),
+                role=Role("admin"),
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+            )
 
-        user_repository.get_user.return_value = user
+            user_repository.get_user.return_value = user
 
-        usecase = GetUserUsecase(user_repository)
-        result = usecase.execute(user_id=user_id)
+            usecase = GetUserUsecase(user_repository)
+            result = usecase.execute(user_id=user_id)
 
-        assert isinstance(result, User)
+            assert isinstance(result, User)
 
-    def test_execute_user_not_found(self, mocker: MockFixture):
-        user_repository = mocker.MagicMock(UserRepository)
-        user_repository.get_user.return_value = None
+        def test_execute_user_not_found(self, mocker: MockFixture):
+            user_repository = mocker.MagicMock(UserRepository)
+            user_repository.get_user.return_value = None
 
-        user_id = 1
+            user_id = 1
 
-        usecase = GetUserUsecase(user_repository)
-        with pytest.raises(UserNotFoundError) as ex:
-            usecase.execute(user_id=user_id)
+            usecase = GetUserUsecase(user_repository)
+            with pytest.raises(UserNotFoundError) as ex:
+                usecase.execute(user_id=user_id)
 
-        assert isinstance(ex.value, UserNotFoundError)
-        assert str(ex.value) == f"User with ID {user_id} not found."
+            assert isinstance(ex.value, UserNotFoundError)
+            assert str(ex.value) == f"User with ID {user_id} not found."

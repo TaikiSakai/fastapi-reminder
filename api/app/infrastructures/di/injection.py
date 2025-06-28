@@ -22,6 +22,10 @@ from app.usecases.user.update_user_usecase import (
     UpdateUserUsecase,
     new_update_user_usecase,
 )
+from app.usecases.user.delete_user_usecase import (
+    DeleteUserUsecase,
+    new_delete_user_usecase,
+)
 
 
 def get_user_repository(db: Session = Depends(get_db)) -> UserRepository:
@@ -55,3 +59,10 @@ def get_all_users_usecase(
 ) -> GetAllUsersUsecase:
     """Get a new instance of GetAllUsersUsecase."""
     return new_get_all_users_usecase(user_repository)
+
+
+def get_delete_user_usecase(
+    user_repository: UserRepository = Depends(get_user_repository)
+) -> DeleteUserUsecase:
+    """Get a new instance of DeleteUserUsecase."""
+    return new_delete_user_usecase(user_repository)

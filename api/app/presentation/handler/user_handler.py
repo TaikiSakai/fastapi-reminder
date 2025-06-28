@@ -15,12 +15,14 @@ from app.infrastructures.di.injection import (
     get_user_usecase,
     get_all_users_usecase,
     get_update_user_usecase,
+    get_delete_user_usecase,
 )
 from app.domain.user.exceptions.user import UserNotFoundError
 from app.usecases.user.create_user_usecase import CreateUserUsecase
 from app.usecases.user.get_user_usecase import GetUserUsecase
 from app.usecases.user.get_all_users_usecase import GetAllUsersUsecase
 from app.usecases.user.update_user_usecase import UpdateUserUsecase
+from app.usecases.user.delete_user_usecase import DeleteUserUsecase
 from app.schemas.users import UserCreateSchema, UserSchema, UserUpdateSchema
 
 
@@ -91,3 +93,18 @@ def update_user(
         raise HTTPException(status_code=404, detail=e)
 
     return UserSchema.from_entity(user)
+
+
+@router.delete("/user/{user_id}")
+def delete_user(
+    user_id: int,
+    usecase: DeleteUserUsecase = Depends(get_delete_user_usecase),
+    db: Session = Depends(get_db),
+) -> bool:
+    try:
+        with db.begin():
+            result = usecase.execute(user_id=user_id)
+    except UserNotFoundError as e:
+        raise HTTPException(status_code=404, detail=e)
+
+    return result
