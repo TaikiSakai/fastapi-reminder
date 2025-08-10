@@ -4,4 +4,5 @@ dev:
 unit-test:
 	pytest
 
-	
+lint:
+	flake8 --config ../pyproject.toml
