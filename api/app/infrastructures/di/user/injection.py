@@ -6,6 +6,7 @@ from app.infrastructures.postgres.user.user_repository import (
     UserRepository,
     new_user_repository,
 )
+from app.infrastructures.aws.s3 import S3Service, new_s3_service
 from app.usecases.user.create_user_usecase import (
     CreateUserUsecase,
     new_create_user_usecase,
@@ -21,6 +22,10 @@ from app.usecases.user.get_all_users_usecase import (
 from app.usecases.user.update_user_usecase import (
     UpdateUserUsecase,
     new_update_user_usecase,
+)
+from app.usecases.user.update_user_icon_url_usecase import (
+    UpdateUserIconURLUsecase,
+    new_update_user_icon_url_usecase,
 )
 from app.usecases.user.delete_user_usecase import (
     DeleteUserUsecase,
@@ -66,3 +71,11 @@ def get_delete_user_usecase(
 ) -> DeleteUserUsecase:
     """Get a new instance of DeleteUserUsecase."""
     return new_delete_user_usecase(user_repository)
+
+
+def get_update_user_icon_url_usecase(
+    user_repository: UserRepository = Depends(get_user_repository),
+    s3_service: S3Service = Depends(new_s3_service)
+) -> UpdateUserIconURLUsecase:
+    """Get a new instance of UpdateUserIconURLUsecase."""
+    return new_update_user_icon_url_usecase(user_repository, s3_service)
