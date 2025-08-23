@@ -11,3 +11,10 @@ class NoUsersRegisteredError(Exception):
 
     def __init__(self, message: str):
         super().__init__(message)
+
+
+class UserCreateError(Exception):
+    """Exception raised when there is an error creating a user."""
+
+    def __init__(self, message: str):
+        super().__init__(message)

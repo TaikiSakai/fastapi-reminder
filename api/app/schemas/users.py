@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 from app.domain.user.entities import User
@@ -38,3 +40,33 @@ class UserResponeSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class S3PresignedPostResponseField(BaseModel):
+    key: str
+    AwsAccessKeyId: str
+    policy: str
+    signature: str
+
+
+class S3PresignedPostResponseMessage(BaseModel):
+    url: str
+    fields: S3PresignedPostResponseField
+
+
+class UserIconResponseSchema(BaseModel):
+    message: S3PresignedPostResponseMessage
+
+    @staticmethod
+    def from_presigned_post_response(response: dict[str, Any]) -> 'UserIconResponseSchema':
+        return UserIconResponseSchema(
+            message=S3PresignedPostResponseMessage(
+                url=response['url'],
+                fields=S3PresignedPostResponseField(
+                    key=response['fields']['key'],
+                    AwsAccessKeyId=response['fields']['AWSAccessKeyId'],
+                    policy=response['fields']['policy'],
+                    signature=response['fields']['signature']
+                )
+            )
+        )
