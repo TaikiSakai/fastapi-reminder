@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import Depends, APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -10,20 +10,22 @@ from app.domain.user.datas import (
     IsActive,
     Role,
 )
-from app.infrastructures.di.injection import (
+from app.infrastructures.di.user.injection import (
     get_create_user_usecase,
     get_user_usecase,
     get_all_users_usecase,
     get_update_user_usecase,
+    get_update_user_icon_url_usecase,
     get_delete_user_usecase,
 )
-from app.domain.user.exceptions.user import UserNotFoundError
+from app.domain.user.exceptions.user import UserNotFoundError, UserCreateError
 from app.usecases.user.create_user_usecase import CreateUserUsecase
 from app.usecases.user.get_user_usecase import GetUserUsecase
 from app.usecases.user.get_all_users_usecase import GetAllUsersUsecase
 from app.usecases.user.update_user_usecase import UpdateUserUsecase
+from app.usecases.user.update_user_icon_url_usecase import UpdateUserIconURLUsecase
 from app.usecases.user.delete_user_usecase import DeleteUserUsecase
-from app.schemas.users import UserCreateSchema, UserSchema, UserUpdateSchema
+from app.schemas.users import UserCreateSchema, UserSchema, UserUpdateSchema, UserIconResponseSchema
 
 
 router = APIRouter(prefix="/api/v1", tags=["v1"])
@@ -51,19 +53,27 @@ def get_users(
 @router.post("/user")
 def create_user(
     data: UserCreateSchema,
-    usecase: CreateUserUsecase = Depends(get_create_user_usecase)
+    usecase: CreateUserUsecase = Depends(get_create_user_usecase),
+    db: Session = Depends(get_db)
 ) -> UserSchema:
     user_name = UserName(data.user_name)
     email = Email(data.email)
     is_active = IsActive(True)
     role = Role(data.role)
 
-    user = usecase.execute(
-        email=email,
-        user_name=user_name,
-        is_active=is_active,
-        role=role
-    )
+    try:
+        with db.begin():
+            user = usecase.execute(
+                email=email,
+                user_name=user_name,
+                is_active=is_active,
+                role=role
+            )
+
+    except UserCreateError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    print(UserSchema.from_entity(user))
 
     return UserSchema.from_entity(user)
 
@@ -93,6 +103,26 @@ def update_user(
         raise HTTPException(status_code=404, detail=e)
 
     return UserSchema.from_entity(user)
+
+
+@router.patch("/user/{user_id}/icon")
+async def update_useer_icon(
+    user_id: int,
+    icon_image: UploadFile = File(...),
+    usecase: UpdateUserIconURLUsecase = Depends(get_update_user_icon_url_usecase),
+    db: Session = Depends(get_db),
+) -> UserIconResponseSchema:
+    try:
+        with db.begin():
+            icon_url = usecase.execute(id=user_id, icon_image=icon_image)
+
+    except UserNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+    if not icon_url:
+        raise HTTPException(status_code=500, detail="Failed to generate presigned URL")
+
+    return UserIconResponseSchema.from_presigned_post_response(icon_url)
 
 
 @router.delete("/user/{user_id}")

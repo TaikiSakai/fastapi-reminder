@@ -6,6 +6,7 @@ from app.domain.user.datas import (
     Role,
     UserName,
     IsActive,
+    IconURL,
 )
 
 
@@ -16,6 +17,7 @@ class User:
             user_name: UserName,
             is_active: IsActive,
             role: Role,
+            icon_url: Optional[IconURL] = None,
             id: Optional[int] = None,
             created_at: datetime = datetime.now(),
             updated_at: datetime = datetime.now()
@@ -25,6 +27,7 @@ class User:
         self._user_name: UserName = user_name
         self._is_active: IsActive = is_active
         self._role: Role = role
+        self._icon_url: IconURL | None = icon_url
         self._created_at: datetime = created_at
         self._updated_at: datetime = updated_at
 
@@ -55,13 +58,17 @@ class User:
         return self._role
 
     @property
+    def icon_url(self) -> IconURL | None:
+        return self._icon_url
+
+    @property
     def created_at(self) -> datetime:
         return self._created_at
 
     @property
     def updated_at(self) -> datetime:
         return self._updated_at
-    
+
     def update_user_name(self, new_user_name: UserName) -> None:
         self._user_name = new_user_name
         self._updated_at = datetime.now()
@@ -73,6 +80,15 @@ class User:
     def update_role(self, new_role: Role) -> None:
         self._role = new_role
         self._updated_at = datetime.now()
+
+    def update_icon_url(self, new_icon_url: IconURL) -> None:
+        self._icon_url = new_icon_url
+        self._updated_at = datetime.now()
+
+    def add_icon_url(self) -> IconURL:
+        icon_url = IconURL.generate()
+        self.update_icon_url(icon_url)
+        return icon_url
 
     @staticmethod
     def create(
@@ -90,6 +106,7 @@ class User:
             user_name=user_name,
             is_active=is_active,
             role=role,
+            icon_url=None,
             created_at=created_at or datetime.now(),
             updated_at=updated_at or datetime.now()
         )

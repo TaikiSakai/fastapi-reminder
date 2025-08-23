@@ -5,6 +5,7 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
+from app.domain.user.datas.icon_url import IconURL
 from app.domain.user.repositories import UserRespositoryInterFace
 from app.domain.user.entities import User
 from app.infrastructures.models.users import UsersModel
@@ -17,7 +18,7 @@ class UserRepository(UserRespositoryInterFace):
     def create_user(self, user: Annotated[User, User]) -> User:
         user_dto = UsersModel.from_entity(user)
         self.db.add(user_dto)
-        self.db.commit()
+        self.db.flush()
 
         return user_dto.to_entity()
 
@@ -40,6 +41,17 @@ class UserRepository(UserRespositoryInterFace):
         current_user.user_name = user_dto.user_name
         current_user.role = user_dto.role
         current_user.updated_at = user_dto.updated_at
+
+    def update_user_icon_url(self, id: int, icon_url: IconURL) -> IconURL | None:
+        user = self.db.query(UsersModel).filter(UsersModel.id == id).first()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user.icon_url = icon_url.value
+        user.updated_at = user.updated_at
+
+        return user.to_entity().icon_url
 
     def delete_user(self, id: int) -> bool:
         user = self.db.query(UsersModel).filter(UsersModel.id == id).first()
