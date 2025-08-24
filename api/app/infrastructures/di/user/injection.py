@@ -19,6 +19,10 @@ from app.usecases.user.get_all_users_usecase import (
     GetAllUsersUsecase,
     new_get_all_users_usecase,
 )
+from app.usecases.user.find_user_usecase import (
+    FindUserUsecase,
+    new_get_find_user_usecase,
+)
 from app.usecases.user.update_user_usecase import (
     UpdateUserUsecase,
     new_update_user_usecase,
@@ -64,6 +68,13 @@ def get_all_users_usecase(
 ) -> GetAllUsersUsecase:
     """Get a new instance of GetAllUsersUsecase."""
     return new_get_all_users_usecase(user_repository)
+
+
+def get_find_user_usecase(
+    user_repository: UserRepository = Depends(get_user_repository)
+) -> FindUserUsecase:
+    """Get a new instance of FindUserUsecase."""
+    return new_get_find_user_usecase(user_repository)
 
 
 def get_delete_user_usecase(

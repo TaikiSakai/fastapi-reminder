@@ -2,6 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+
 from app.domain.user.entities import User
 
 
@@ -33,6 +34,13 @@ class UserUpdateSchema(BaseModel):
     role: str | None
 
 
+class SearchUserSchema(BaseModel):
+    user_name: str | None = Field(default=None, min_length=1, max_length=100)
+    role: str | None = Field(default=None)
+    created_at_from: str | None = Field(default=None)
+    created_at_to: str | None = Field(default=None)
+
+
 class UserResponeSchema(BaseModel):
     id: int
     user_name: str
@@ -40,6 +48,13 @@ class UserResponeSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class SearchUserResponseSchema(BaseModel):
+    users: list[UserResponeSchema]
+    total: int
+    page: int
+    size: int
 
 
 class S3PresignedPostResponseField(BaseModel):

@@ -1,8 +1,14 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import List, Optional
+from fastapi_pagination import Page
 
 from app.domain.user.entities import User
-from app.domain.user.datas import IconURL
+from app.domain.user.datas import (
+    UserName,
+    Role,
+    IconURL
+)
 
 
 class UserRespositoryInterFace(ABC):
@@ -12,6 +18,16 @@ class UserRespositoryInterFace(ABC):
 
     @abstractmethod
     def get_user(self, id: int) -> Optional[User]:
+        pass
+
+    @abstractmethod
+    def find_user(
+        self,
+        user_name: UserName | None,
+        role: Role | None,
+        created_at_from: datetime | None,
+        created_at_to: datetime | None,
+    ) -> Page[User]:
         pass
 
     @abstractmethod

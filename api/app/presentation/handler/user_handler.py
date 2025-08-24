@@ -1,6 +1,8 @@
 from typing import List
+from datetime import datetime
 
 from fastapi import Depends, APIRouter, HTTPException, File, UploadFile
+from fastapi_pagination import Page, Params
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -14,6 +16,7 @@ from app.infrastructures.di.user.injection import (
     get_create_user_usecase,
     get_user_usecase,
     get_all_users_usecase,
+    get_find_user_usecase,
     get_update_user_usecase,
     get_update_user_icon_url_usecase,
     get_delete_user_usecase,
@@ -22,11 +25,17 @@ from app.domain.user.exceptions.user import UserNotFoundError, UserCreateError
 from app.usecases.user.create_user_usecase import CreateUserUsecase
 from app.usecases.user.get_user_usecase import GetUserUsecase
 from app.usecases.user.get_all_users_usecase import GetAllUsersUsecase
+from app.usecases.user.find_user_usecase import FindUserUsecase
 from app.usecases.user.update_user_usecase import UpdateUserUsecase
 from app.usecases.user.update_user_icon_url_usecase import UpdateUserIconURLUsecase
 from app.usecases.user.delete_user_usecase import DeleteUserUsecase
-from app.schemas.users import UserCreateSchema, UserSchema, UserUpdateSchema, UserIconResponseSchema
-
+from app.schemas.users import (
+    UserCreateSchema,
+    UserSchema,
+    UserUpdateSchema,
+    UserIconResponseSchema,
+    SearchUserSchema
+)
 
 router = APIRouter(prefix="/api/v1", tags=["v1"])
 
@@ -48,6 +57,26 @@ def get_users(
     users = usecase.execute()
 
     return [UserSchema.from_entity(user) for user in users]
+
+
+@router.get("/users/search")
+def find_users(
+    q: SearchUserSchema = Depends(),
+    params: Params = Depends(),
+    usecase: FindUserUsecase = Depends(get_find_user_usecase)
+) -> Page[UserSchema]:
+    user_name = UserName(q.user_name) if q.user_name else None
+    role = Role(q.role) if q.role else None
+    date_from = datetime.strptime(q.created_at_from, "%Y-%m-%d") if q.created_at_from else None
+    date_to = datetime.strptime(q.created_at_to, "%Y-%m-%d") if q.created_at_to else None
+
+    users = usecase.execute(user_name, role, date_from, date_to)
+
+    return Page.create(
+        items=[UserSchema.from_entity(user) for user in users.items],
+        params=params,
+        total=users.total,
+    )
 
 
 @router.post("/user")

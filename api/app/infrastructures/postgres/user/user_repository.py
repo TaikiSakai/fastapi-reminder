@@ -1,13 +1,18 @@
 """Postgres implementation of the UserRepository interface."""
 
 from typing import Annotated
+from datetime import datetime
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 from app.domain.user.datas.icon_url import IconURL
 from app.domain.user.repositories import UserRespositoryInterFace
 from app.domain.user.entities import User
+from app.domain.user.datas import UserName, Role
 from app.infrastructures.models.users import UsersModel
 
 
@@ -28,6 +33,29 @@ class UserRepository(UserRespositoryInterFace):
             return user.to_entity()
 
         raise HTTPException(status_code=404, detail="User not found")
+
+    def find_user(
+        self,
+        user_name: UserName | None,
+        role: Role | None,
+        created_at_from: datetime | None,
+        created_at_to: datetime | None,
+    ) -> Page[User]:
+        user_all = select(UsersModel)
+
+        if user_name:
+            user_all = user_all.where(UsersModel.user_name.like(f"%{user_name}%"))
+
+        if role:
+            user_all = user_all.where(UsersModel.role == role)
+
+        if created_at_from:
+            user_all = user_all.where(UsersModel.created_at >= created_at_from)
+
+        if created_at_to:
+            user_all = user_all.where(UsersModel.created_at <= created_at_to)
+
+        return paginate(self.db, user_all)
 
     def update_user(self, id: int, user: Annotated[User, User]) -> None:
         current_user = self.db.query(UsersModel) \
