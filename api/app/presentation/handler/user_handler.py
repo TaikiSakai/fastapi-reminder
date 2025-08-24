@@ -1,7 +1,7 @@
 from typing import List
 from datetime import datetime
 
-from fastapi import Depends, APIRouter, HTTPException, File, UploadFile
+from fastapi import Depends, APIRouter, HTTPException, File, UploadFile, Query
 from fastapi_pagination import Page, Params
 from sqlalchemy.orm import Session
 
@@ -61,22 +61,33 @@ def get_users(
 
 @router.get("/users/search")
 def find_users(
-    q: SearchUserSchema = Depends(),
+    q_user_name: str | None = Query(default=None, min_length=1, max_length=100),
+    q_role: str | None = Query(default=None),
+    q_created_at_from: str | None = Query(
+        default=None,
+        pattern=r'^\d{4}-\d{2}-\d{2}$',
+        description="Date in YYYY-MM-DD format"),
+    q_created_at_to: str | None = Query(default=None),
     params: Params = Depends(),
-    usecase: FindUserUsecase = Depends(get_find_user_usecase)
+    usecase: FindUserUsecase = Depends(get_find_user_usecase),
 ) -> Page[UserSchema]:
-    user_name = UserName(q.user_name) if q.user_name else None
-    role = Role(q.role) if q.role else None
-    date_from = datetime.strptime(q.created_at_from, "%Y-%m-%d") if q.created_at_from else None
-    date_to = datetime.strptime(q.created_at_to, "%Y-%m-%d") if q.created_at_to else None
+    try:
+        print("params", params)
+        user_name = UserName(q_user_name) if q_user_name else None
+        role = Role(q_role) if q_role else None
+        date_from = datetime.strptime(q_created_at_from, "%Y-%m-%d") if q_created_at_from else None
+        date_to = datetime.strptime(q_created_at_to, "%Y-%m-%d") if q_created_at_to else None
 
-    users = usecase.execute(user_name, role, date_from, date_to)
-
-    return Page.create(
-        items=[UserSchema.from_entity(user) for user in users.items],
-        params=params,
-        total=users.total,
-    )
+        users = usecase.execute(user_name, role, date_from, date_to, params)
+        return Page.create(
+            items=[UserSchema.from_entity(user) for user in users.items],
+            params=params,
+            total=users.total,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/user")

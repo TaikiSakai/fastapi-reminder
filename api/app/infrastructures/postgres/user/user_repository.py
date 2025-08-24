@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from fastapi_pagination import Page
+from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 
 from app.domain.user.datas.icon_url import IconURL
@@ -40,6 +40,7 @@ class UserRepository(UserRespositoryInterFace):
         role: Role | None,
         created_at_from: datetime | None,
         created_at_to: datetime | None,
+        params: Params = Params(),
     ) -> Page[User]:
         user_all = select(UsersModel)
 
@@ -55,7 +56,7 @@ class UserRepository(UserRespositoryInterFace):
         if created_at_to:
             user_all = user_all.where(UsersModel.created_at <= created_at_to)
 
-        return paginate(self.db, user_all)
+        return paginate(self.db, user_all, params)
 
     def update_user(self, id: int, user: Annotated[User, User]) -> None:
         current_user = self.db.query(UsersModel) \

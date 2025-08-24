@@ -1,6 +1,6 @@
 from datetime import datetime
 from abc import abstractmethod
-from fastapi_pagination import Page
+from fastapi_pagination import Page, Params
 
 from app.domain.user.datas import UserName, Role
 from app.domain.user.exceptions.user import NoUsersRegisteredError
@@ -16,6 +16,7 @@ class FindUserUseCaseInterFace:
         role: Role | None,
         created_at_from: datetime | None,
         created_at_to: datetime | None,
+        params: Params = Params(),
     ) -> Page[User]:
         pass
 
@@ -30,12 +31,14 @@ class FindUserUsecase(FindUserUseCaseInterFace):
         role: Role | None,
         created_at_from: datetime | None,
         created_at_to: datetime | None,
+        params: Params = Params(),
     ) -> Page[User]:
         users = self.user_repository.find_user(
             user_name,
             role,
             created_at_from,
-            created_at_to
+            created_at_to,
+            params=params,
         )
 
         if not users:

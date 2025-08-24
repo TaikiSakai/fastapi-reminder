@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Optional
-from fastapi_pagination import Page
+from fastapi_pagination import Page, Params
 
 from app.domain.user.entities import User
 from app.domain.user.datas import (
@@ -27,6 +27,7 @@ class UserRespositoryInterFace(ABC):
         role: Role | None,
         created_at_from: datetime | None,
         created_at_to: datetime | None,
+        params: Params = Params(),
     ) -> Page[User]:
         pass
 
